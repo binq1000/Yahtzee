@@ -59,13 +59,291 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <ListView
-            android:id="@+id/list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        </ListView>
+        android:orientation="horizontal">
+        <!-- this Linear layout is for the simple ones to sixes -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:orientation="vertical">
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardOne"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:id="@+id/textKeyOne"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Ones"/>
+
+                    <TextView
+                        android:id="@+id/textValueOne"
+                        style="@style/scoreText"
+                        android:layout_weight="2"/>
+                </LinearLayout>
+
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardTwo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/textKeyTwo"
+                    style="@style/scoreText"
+                    android:layout_weight="8"
+                    android:text="Twos"/>
+
+                <TextView
+                    android:id="@+id/textValueTwo"
+                    style="@style/scoreText"
+                    android:layout_weight="2"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardThree"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/textKeyThree"
+                    style="@style/scoreText"
+                    android:layout_weight="8"
+                    android:text="Threes"/>
+
+                <TextView
+                    android:id="@+id/textValueThree"
+                    style="@style/scoreText"
+                    android:layout_weight="2"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardFour"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/textKeyFour"
+                    style="@style/scoreText"
+                    android:layout_weight="8"
+                    android:text="Fours"/>
+
+                <TextView
+                    android:id="@+id/textValueFour"
+                    style="@style/scoreText"
+                    android:layout_weight="2"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardFive"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/textKeyFive"
+                    style="@style/scoreText"
+                    android:layout_weight="8"
+                    android:text="Fives"/>
+
+                <TextView
+                    android:id="@+id/textValueFive"
+                    style="@style/scoreText"
+                    android:layout_weight="2"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardSix"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                <TextView
+                    android:id="@+id/textKeySix"
+                    style="@style/scoreText"
+                    android:layout_weight="8"
+                    android:text="Sixes"/>
+
+                <TextView
+                    android:id="@+id/textValueSix"
+                    style="@style/scoreText"
+                    android:layout_weight="2"/>
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+        </LinearLayout>
+
+        <!-- this Linear layout is for the more difficult ones -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="5"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardThreeOfAKind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyThreeOfAKind"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="3 of a kind"/>
+
+                    <TextView
+                        android:id="@+id/textValueThreeOfAKind"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardFourOfAKind"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyFourOfAKind"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="4 of a kind"/>
+
+                    <TextView
+                        android:id="@+id/textValueFourOfAKind"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardFullHouse"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyFullHouse"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Full House"/>
+
+                    <TextView
+                        android:id="@+id/textValueFullHouse"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardSmallStraight"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeySmallStraight"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Small Straigth"/>
+
+                    <TextView
+                        android:id="@+id/textValueSmallStraight"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardLongStraigth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyLongStraigth"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Long Straigth"/>
+
+                    <TextView
+                        android:id="@+id/textValueLongStraigth"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardYahtzee"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyYahtzee"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Yahtzee"/>
+
+                    <TextView
+                        android:id="@+id/textValueYahtzee"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardChance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+                    <TextView
+                        android:id="@+id/textKeyChance"
+                        style="@style/scoreText"
+                        android:layout_weight="8"
+                        android:text="Chance"/>
+
+                    <TextView
+                        android:id="@+id/textValueChance"
+                        style="@style/scoreText"
+                        android:layout_weight="2" />
+                </LinearLayout>
+            </android.support.v7.widget.CardView>
+        </LinearLayout>
     </LinearLayout>
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
