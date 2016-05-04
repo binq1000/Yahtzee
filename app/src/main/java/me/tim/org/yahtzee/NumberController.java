@@ -1,8 +1,10 @@
 package me.tim.org.yahtzee;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.support.v7.widget.CardView;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -48,6 +50,33 @@ public class NumberController {
 
         textViews = new ArrayList<>();
         fillTextViewList();
+
+        setImageViewOnClick();
+    }
+
+    private void setImageViewOnClick() {
+        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        setSingleImageViewClick(imageView);
+    }
+
+    private void setSingleImageViewClick(ImageView imageView) {
+        imageView.setTag("Test");
+        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ClipData dragData = ClipData.newPlainText("Test", "second Test");
+                View.DragShadowBuilder myShadow = new View.DragShadowBuilder(v);
+
+                v.startDrag(dragData, myShadow, null, 0);
+                return false;
+            }
+        });
     }
 
     private void fillTextViewList() {
