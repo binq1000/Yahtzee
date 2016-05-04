@@ -6,6 +6,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
+import java.util.TreeSet;
 
 /**
  * Created by Nekkyou on 29-3-2016.
@@ -27,6 +30,8 @@ public class NumberController {
 
     private boolean firstThrow = true;
     private int throwAmount;
+
+    private ArrayList<TextView> textViews;
 
     public NumberController(Activity activity) {
 
@@ -40,6 +45,26 @@ public class NumberController {
         setListeners();
         toggleEnableToggleButton(false);
         throwAmount = 0;
+
+        textViews = new ArrayList<>();
+        fillTextViewList();
+    }
+
+    private void fillTextViewList() {
+        textViews.add((TextView) activity.findViewById(R.id.textValueOne));
+        textViews.add((TextView) activity.findViewById(R.id.textValueTwo));
+        textViews.add((TextView) activity.findViewById(R.id.textValueThree));
+        textViews.add((TextView) activity.findViewById(R.id.textValueFour));
+        textViews.add((TextView) activity.findViewById(R.id.textValueFive));
+        textViews.add((TextView) activity.findViewById(R.id.textValueSix));
+
+        textViews.add((TextView) activity.findViewById(R.id.textValueThreeOfAKind));
+        textViews.add((TextView) activity.findViewById(R.id.textValueFourOfAKind));
+        textViews.add((TextView) activity.findViewById(R.id.textValueFullHouse));
+        textViews.add((TextView) activity.findViewById(R.id.textValueSmallStraight));
+        textViews.add((TextView) activity.findViewById(R.id.textValueLongStraigth));
+        textViews.add((TextView) activity.findViewById(R.id.textValueYahtzee));
+        textViews.add((TextView) activity.findViewById(R.id.textValueChance));
     }
 
     private void processScore(String item) {
@@ -57,10 +82,6 @@ public class NumberController {
             numbers.add(Integer.valueOf(toggleButton.getText().toString()));
             totalSum += Integer.valueOf(toggleButton.getText().toString());
         }
-
-        int value = 0;
-
-        TextView textView = null;
 
         //region Switch
         switch (item) {
@@ -100,25 +121,73 @@ public class NumberController {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueThreeOfAKind), totalSum)) {
                         return;
                     }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueThreeOfAKind), 0)) {
+                        return;
+                    }
                 }
                 break;
             case "FourOfAKind":
                 //TODO
+                if (checkAllMultipleOccurrences(numbers, 4)) {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFourOfAKind), totalSum)) {
+                        return;
+                    }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFourOfAKind), 0)) {
+                        return;
+                    }
+                }
                 break;
             case "SmlStraigth":
-                //TODO
+                if (checkStreet(numbers, 4)) {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueSmallStraight), 30)) {
+                        return;
+                    }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueSmallStraight), 0)) {
+                        return;
+                    }
+                }
                 break;
             case "LngStraigth":
-                //TODO
+                if (checkStreet(numbers, 5)) {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueLongStraigth), 40)) {
+                        return;
+                    }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueLongStraigth), 0)) {
+                        return;
+                    }
+                }
                 break;
             case "FullHouse":
                 //TODO
+                if (checkFullHouse(numbers)) {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFullHouse), 25)) {
+                        return;
+                    }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFullHouse), 0)) {
+                        return;
+                    }
+                }
                 break;
             case "Yahtzee":
-                //TODO
+                if (checkYahtzee(numbers)) {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueYahtzee), 50)) {
+                        return;
+                    }
+                } else {
+                    if (!setSingleScore((TextView) activity.findViewById(R.id.textValueYahtzee), 0)) {
+                        return;
+                    }
+                }
                 break;
             case "Chance":
-                //TODO
+                if (!setSingleScore((TextView)activity.findViewById(R.id.textValueChance), totalSum)) {
+                    return;
+                }
                 break;
             default:
                 throw new IllegalArgumentException("Input not found");
@@ -131,8 +200,22 @@ public class NumberController {
         checkEnd();
     }
 
+    private boolean checkFullHouse(List<Integer> numbers) {
+        TreeSet<Integer> distinctNumbers = new TreeSet<>(numbers);
+        if (distinctNumbers.size() != 2) {
+            return false;
+        } else {
+            for (int i : distinctNumbers) {
+                if (Collections.frequency(numbers, i) < 2) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     private boolean checkAllMultipleOccurrences(List<Integer> numbers, int amount) {
-        int counter = 0;
         for (int i=1; i < 7; i++) {
             if (Collections.frequency(numbers, i) >= amount) {
                 return true;
@@ -141,15 +224,45 @@ public class NumberController {
         return false;
     }
 
-    private void checkEnd() {
-        TextView textViewOne = (TextView) activity.findViewById(R.id.textValueOne);
-        TextView textViewTwo = (TextView) activity.findViewById(R.id.textValueTwo);
-        TextView textViewThree = (TextView) activity.findViewById(R.id.textValueThree);
-        TextView textViewFour = (TextView) activity.findViewById(R.id.textValueFour);
-        TextView textViewFive = (TextView) activity.findViewById(R.id.textValueFive);
-        TextView textViewSix = (TextView) activity.findViewById(R.id.textValueSix);
+    private boolean checkStreet(List<Integer> numbers, int streetLength) {
+        Collections.sort(numbers);
+        int counter = 1;
+        int lastNumber = 0;
+        for (int i : numbers) {
+            if (lastNumber == 0) {
+                lastNumber = i;
+            } else {
+                if (i - 1 == lastNumber) {
+                    counter++;
+                    if (counter >= streetLength) {
+                        return true;
+                    }
+                } else if (i != lastNumber){
+                    counter = 1;
+                }
 
-        if (!textViewOne.getText().toString().matches("") && !textViewTwo.getText().toString().matches("") && !textViewThree.getText().toString().matches("") && !textViewFour.getText().toString().matches("") && !textViewFive.getText().toString().matches("") && !textViewSix.getText().toString().matches("")) {
+                lastNumber = i;
+            }
+        }
+        return false;
+    }
+
+    private boolean checkYahtzee(List<Integer> numbers) {
+        if (Collections.frequency(numbers, numbers.get(1)) != 5) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private void checkEnd() {
+        boolean shouldEnd = true;
+        for (TextView textView : textViews) {
+            if (textView.getText().toString().matches("")) {
+                shouldEnd = false;
+            }
+        }
+        if (shouldEnd) {
             Button button = (Button) activity.findViewById(R.id.btnThrow);
             button.setText("Restart");
             button.setOnClickListener(new View.OnClickListener() {
@@ -159,6 +272,7 @@ public class NumberController {
                 }
             });
         }
+
     }
 
     private boolean setSingleScore(TextView textView, int value) {
@@ -305,13 +419,13 @@ public class NumberController {
         setSingleCardListener((CardView) activity.findViewById(R.id.cardFive), "Fives");
         setSingleCardListener((CardView) activity.findViewById(R.id.cardSix), "Sixes");
 
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardThreeOfAKind),  "ThreeOfAKind");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardThreeOfAKind), "ThreeOfAKind");
         setSingleCardListener((CardView) activity.findViewById(R.id.cardFourOfAKind),  "FourOfAKind");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardSmallStraight),  "SmlStraigth");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardLongStraigth),  "LngStraigth");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardFullHouse),  "FullHouse");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardYahtzee),  "Yahtzee");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardChance),  "Chance");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardSmallStraight), "SmlStraigth");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardLongStraigth), "LngStraigth");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardFullHouse), "FullHouse");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardYahtzee), "Yahtzee");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardChance), "Chance");
     }
 
     private void setSingleCardListener(CardView cardView, final String value) {
@@ -362,32 +476,59 @@ public class NumberController {
         tButton.setText(String.valueOf(r.nextInt(6) + 1));
         tButton.setTextOn(tButton.getText());
         tButton.setTextOff(tButton.getText());
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number1);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
+        setImageButtonImage((ImageView) activity.findViewById(R.id.number1Img), Integer.valueOf(tButton.getText().toString()));
 
         tButton = (ToggleButton) activity.findViewById(R.id.number2);
         tButton.setText(String.valueOf(r.nextInt(6) + 1));
         tButton.setTextOn(tButton.getText());
         tButton.setTextOff(tButton.getText());
+        setImageButtonImage((ImageView) activity.findViewById(R.id.number2Img), Integer.valueOf(tButton.getText().toString()));
 
         tButton = (ToggleButton) activity.findViewById(R.id.number3);
         tButton.setText(String.valueOf(r.nextInt(6) + 1));
         tButton.setTextOn(tButton.getText());
         tButton.setTextOff(tButton.getText());
+        setImageButtonImage((ImageView) activity.findViewById(R.id.number3Img), Integer.valueOf(tButton.getText().toString()));
 
         tButton = (ToggleButton) activity.findViewById(R.id.number4);
         tButton.setText(String.valueOf(r.nextInt(6) + 1));
         tButton.setTextOn(tButton.getText());
         tButton.setTextOff(tButton.getText());
+        setImageButtonImage((ImageView) activity.findViewById(R.id.number4Img), Integer.valueOf(tButton.getText().toString()));
 
         tButton = (ToggleButton) activity.findViewById(R.id.number5);
         tButton.setText(String.valueOf(r.nextInt(6) + 1));
         tButton.setTextOn(tButton.getText());
         tButton.setTextOff(tButton.getText());
+        setImageButtonImage((ImageView) activity.findViewById(R.id.number5Img), Integer.valueOf(tButton.getText().toString()));
 
+    }
+
+    private void setImageButtonImage(ImageView imageButton, int value) {
+        if (value < 1 || value > 6) {
+            return;
+        }
+
+        switch (value) {
+            case 1:
+                imageButton.setImageResource(R.drawable.ic_looks_one_black_18dp);
+                break;
+            case 2:
+                imageButton.setImageResource(R.drawable.ic_looks_two_black_18dp);
+                break;
+            case 3:
+                imageButton.setImageResource(R.drawable.ic_looks_3_black_18dp);
+                break;
+            case 4:
+                imageButton.setImageResource(R.drawable.ic_looks_4_black_18dp);
+                break;
+            case 5:
+                imageButton.setImageResource(R.drawable.ic_looks_5_black_18dp);
+                break;
+            case 6:
+                imageButton.setImageResource(R.drawable.ic_looks_6_black_18dp);
+                break;
+        }
     }
 
 

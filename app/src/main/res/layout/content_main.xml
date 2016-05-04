@@ -47,6 +47,27 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/number1Img"
+            style="@style/imageButtonStyle"/>
+        <ImageView
+            android:id="@+id/number2Img"
+            style="@style/imageButtonStyle"/>
+        <ImageView
+            android:id="@+id/number3Img"
+            style="@style/imageButtonStyle"/>
+        <ImageView
+            android:id="@+id/number4Img"
+            style="@style/imageButtonStyle"/>
+        <ImageView
+            android:id="@+id/number5Img"
+            style="@style/imageButtonStyle"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center">
         <Button
