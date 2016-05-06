@@ -2,6 +2,8 @@ package me.tim.org.yahtzee;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +23,6 @@ import java.util.TreeSet;
 public class NumberController {
 
     private Activity activity;
-//    private ArrayList<ToggleButton> toggleButtons;
     private ArrayList<ImageView> imageViews;
     private boolean firstThrow = true;
     private int throwAmount;
@@ -136,7 +137,6 @@ public class NumberController {
                 }
                 break;
             case "ThreeOfAKind":
-                //TODO
                 if (checkAllMultipleOccurrences(numbers, 3)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueThreeOfAKind), totalSum)) {
                         return;
@@ -148,7 +148,6 @@ public class NumberController {
                 }
                 break;
             case "FourOfAKind":
-                //TODO
                 if (checkAllMultipleOccurrences(numbers, 4)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFourOfAKind), totalSum)) {
                         return;
@@ -182,7 +181,6 @@ public class NumberController {
                 }
                 break;
             case "FullHouse":
-                //TODO
                 if (checkFullHouse(numbers)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFullHouse), 25)) {
                         return;
@@ -365,22 +363,27 @@ public class NumberController {
 
     public void setListeners() {
         ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
         imageViews.add(imageView);
         setImageViewClicked(imageView);
 
         imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
         imageViews.add(imageView);
         setImageViewClicked(imageView);
 
         imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
         imageViews.add(imageView);
         setImageViewClicked(imageView);
 
         imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
         imageViews.add(imageView);
         setImageViewClicked(imageView);
 
         imageView = (ImageView) activity.findViewById(R.id.number5Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
         imageViews.add(imageView);
         setImageViewClicked(imageView);
 
@@ -388,6 +391,7 @@ public class NumberController {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (firstThrow) {
                     generateNumbers();
                     firstThrow = false;
@@ -399,12 +403,77 @@ public class NumberController {
                 if (throwAmount >= 2) {
                     button.setEnabled(false);
                 }
+
+                imageAnimation();
             }
         });
 
         setCardListeners();
     }
 
+    private void imageAnimation() {
+        for (ImageView imageView : imageViews) {
+            if ((boolean)imageView.getTag(R.id.imageViewIsChecked) || firstThrow) {
+                singleImageAnimation(imageView);
+                imageView.setTag(R.id.imageViewIsChecked, false);
+            }
+            System.out.println("IsChecked: " + (boolean)imageView.getTag(R.id.imageViewIsChecked));
+            System.out.println("firstThrow: " + firstThrow + "\n");
+        }
+    }
+
+    private void singleImageAnimation(final ImageView imageView) {
+        AnimationDrawable animation = new AnimationDrawable();
+        for (Drawable drawable : getRandomDrawables(5)) {
+            animation.addFrame(drawable, 100);
+        }
+        animation.addFrame(getLastDiceDrawable(imageView), 100);
+
+        animation.setOneShot(true);
+        imageView.setImageDrawable(animation);
+        animation.start();
+
+
+    }
+
+    private List<Drawable> getRandomDrawables(int amount) {
+        Random r = new Random();
+        List<Drawable> drawables = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            int value = r.nextInt(6) + 1;
+            drawables.add(getDrawableDiceByNumber(value));
+        }
+
+        return drawables;
+    }
+
+    private Drawable getDrawableDiceByNumber(int number) {
+        if (number < 1 || number > 6) {
+            return null;
+        }
+
+        switch (number) {
+            case 1:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_one_black_18dp);
+            case 2:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_two_black_18dp);
+            case 3:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_3_black_18dp);
+            case 4:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_4_black_18dp);
+            case 5:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_5_black_18dp);
+            case 6:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_6_black_18dp);
+        }
+
+        return null;
+    }
+
+    private Drawable getLastDiceDrawable(ImageView imageView) {
+        int value = (int) imageView.getTag(R.id.imageViewNumbericValue);
+        return getDrawableDiceByNumber(value);
+    }
     private void setImageViewClicked(final ImageView imageView) {
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -457,7 +526,6 @@ public class NumberController {
             if (isChecked) {
                 int value = r.nextInt(6) + 1;
                 imageView.setTag(R.id.imageViewNumbericValue, value);
-                imageView.setTag(R.id.imageViewIsChecked, false);
                 setImageViewImage(imageView);
             }
         }
@@ -470,31 +538,26 @@ public class NumberController {
         value = r.nextInt(6) + 1;
         ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
         imageView.setTag(R.id.imageViewNumbericValue, value);
-        imageView.setTag(R.id.imageViewIsChecked, false);
         setImageViewImage(imageView);
 
         value = r.nextInt(6) + 1;
         imageView = (ImageView) activity.findViewById(R.id.number2Img);
         imageView.setTag(R.id.imageViewNumbericValue, value);
-        imageView.setTag(R.id.imageViewIsChecked, false);
         setImageViewImage(imageView);
 
         value = r.nextInt(6) + 1;
         imageView = (ImageView) activity.findViewById(R.id.number3Img);
         imageView.setTag(R.id.imageViewNumbericValue, value);
-        imageView.setTag(R.id.imageViewIsChecked, false);
         setImageViewImage(imageView);
 
         value = r.nextInt(6) + 1;
         imageView = (ImageView) activity.findViewById(R.id.number4Img);
         imageView.setTag(R.id.imageViewNumbericValue, value);
-        imageView.setTag(R.id.imageViewIsChecked, false);
         setImageViewImage(imageView);
 
         value = r.nextInt(6) + 1;
         imageView = (ImageView) activity.findViewById(R.id.number5Img);
         imageView.setTag(R.id.imageViewNumbericValue, value);
-        imageView.setTag(R.id.imageViewIsChecked, false);
         setImageViewImage(imageView);
     }
 
@@ -552,7 +615,6 @@ public class NumberController {
                 break;
         }
     }
-
 
     public void restart() {
         firstThrow = true;
