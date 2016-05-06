@@ -2,18 +2,13 @@ package me.tim.org.yahtzee;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.CardView;
 import android.view.View;
-import android.webkit.MimeTypeMap;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ToggleButton;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,8 +23,7 @@ import java.util.TreeSet;
 public class NumberController {
 
     private Activity activity;
-    private ArrayList<ToggleButton> toggleButtons;
-
+    private ArrayList<ImageView> imageViews;
     private boolean firstThrow = true;
     private int throwAmount;
 
@@ -42,10 +36,8 @@ public class NumberController {
 
         this.activity = activity;
 
-        toggleButtons = new ArrayList<>();
-
+        imageViews = new ArrayList<>();
         setListeners();
-        toggleEnableToggleButton(false);
         throwAmount = 0;
 
         textViews = new ArrayList<>();
@@ -105,11 +97,11 @@ public class NumberController {
         List<Integer> numbers = new ArrayList<>();
         int totalSum = 0;
 
-        ListIterator<ToggleButton> it = toggleButtons.listIterator();
+        ListIterator<ImageView> it = imageViews.listIterator();
         while (it.hasNext()) {
-            ToggleButton toggleButton = it.next();
-            numbers.add(Integer.valueOf(toggleButton.getText().toString()));
-            totalSum += Integer.valueOf(toggleButton.getText().toString());
+            ImageView imageView = it.next();
+            numbers.add((Integer) imageView.getTag(R.id.imageViewNumbericValue));
+            totalSum += (int) imageView.getTag(R.id.imageViewNumbericValue);
         }
 
         //region Switch
@@ -145,7 +137,6 @@ public class NumberController {
                 }
                 break;
             case "ThreeOfAKind":
-                //TODO
                 if (checkAllMultipleOccurrences(numbers, 3)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueThreeOfAKind), totalSum)) {
                         return;
@@ -157,7 +148,6 @@ public class NumberController {
                 }
                 break;
             case "FourOfAKind":
-                //TODO
                 if (checkAllMultipleOccurrences(numbers, 4)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFourOfAKind), totalSum)) {
                         return;
@@ -191,7 +181,6 @@ public class NumberController {
                 }
                 break;
             case "FullHouse":
-                //TODO
                 if (checkFullHouse(numbers)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFullHouse), 25)) {
                         return;
@@ -360,69 +349,49 @@ public class NumberController {
     }
 
     private void resetNumbers() {
-        toggleEnableToggleButton(false);
         activity.findViewById(R.id.btnThrow).setEnabled(true);
         firstThrow = true;
         throwAmount = 0;
 
-        ListIterator<ToggleButton> it = toggleButtons.listIterator();
+        ListIterator<ImageView> it = imageViews.listIterator();
         while (it.hasNext()) {
-            ToggleButton toggleButton = it.next();
-            toggleButton.setText("");
-            toggleButton.setTextOn("");
-            toggleButton.setTextOff("");
-            toggleButton.setChecked(false);
+            ImageView imageView = it.next();
+            imageView.setImageResource(R.drawable.ic_loop_black_18dp);
+            //TODO
         }
     }
 
-    public void toggleEnableToggleButton(boolean value) {
-        ToggleButton tButton = (ToggleButton) activity.findViewById(R.id.number1);
-        tButton.setEnabled(value);
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number2);
-        tButton.setEnabled(value);
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number3);
-        tButton.setEnabled(value);
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number4);
-        tButton.setEnabled(value);
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number5);
-        tButton.setEnabled(value);
-    }
-
     public void setListeners() {
+        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
 
-        ToggleButton tButton = (ToggleButton) activity.findViewById(R.id.number1);
-        tButton.setText("");
-        setToggleButtonListeners(tButton);
-        toggleButtons.add(tButton);
+        imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number2);
-        tButton.setText("");
-        setToggleButtonListeners(tButton);
-        toggleButtons.add(tButton);
+        imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number3);
-        tButton.setText("");
-        setToggleButtonListeners(tButton);
-        toggleButtons.add(tButton);
+        imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number4);
-        tButton.setText("");
-        setToggleButtonListeners(tButton);
-        toggleButtons.add(tButton);
-
-        tButton = (ToggleButton) activity.findViewById(R.id.number5);
-        tButton.setText("");
-        setToggleButtonListeners(tButton);
-        toggleButtons.add(tButton);
+        imageView = (ImageView) activity.findViewById(R.id.number5Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
 
         final Button button = (Button) activity.findViewById(R.id.btnThrow);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 if (firstThrow) {
                     generateNumbers();
                     firstThrow = false;
@@ -434,10 +403,91 @@ public class NumberController {
                 if (throwAmount >= 2) {
                     button.setEnabled(false);
                 }
+
+                imageAnimation();
             }
         });
 
         setCardListeners();
+    }
+
+    private void imageAnimation() {
+        for (ImageView imageView : imageViews) {
+            if ((boolean)imageView.getTag(R.id.imageViewIsChecked) || firstThrow) {
+                singleImageAnimation(imageView);
+                imageView.setTag(R.id.imageViewIsChecked, false);
+            }
+            System.out.println("IsChecked: " + (boolean)imageView.getTag(R.id.imageViewIsChecked));
+            System.out.println("firstThrow: " + firstThrow + "\n");
+        }
+    }
+
+    private void singleImageAnimation(final ImageView imageView) {
+        AnimationDrawable animation = new AnimationDrawable();
+        for (Drawable drawable : getRandomDrawables(5)) {
+            animation.addFrame(drawable, 100);
+        }
+        animation.addFrame(getLastDiceDrawable(imageView), 100);
+
+        animation.setOneShot(true);
+        imageView.setImageDrawable(animation);
+        animation.start();
+
+
+    }
+
+    private List<Drawable> getRandomDrawables(int amount) {
+        Random r = new Random();
+        List<Drawable> drawables = new ArrayList<>();
+        for (int i = 0; i < amount; i++) {
+            int value = r.nextInt(6) + 1;
+            drawables.add(getDrawableDiceByNumber(value));
+        }
+
+        return drawables;
+    }
+
+    private Drawable getDrawableDiceByNumber(int number) {
+        if (number < 1 || number > 6) {
+            return null;
+        }
+
+        switch (number) {
+            case 1:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_one_black_18dp);
+            case 2:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_two_black_18dp);
+            case 3:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_3_black_18dp);
+            case 4:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_4_black_18dp);
+            case 5:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_5_black_18dp);
+            case 6:
+                return activity.getResources().getDrawable(R.drawable.ic_looks_6_black_18dp);
+        }
+
+        return null;
+    }
+
+    private Drawable getLastDiceDrawable(ImageView imageView) {
+        int value = (int) imageView.getTag(R.id.imageViewNumbericValue);
+        return getDrawableDiceByNumber(value);
+    }
+    private void setImageViewClicked(final ImageView imageView) {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = (boolean) v.getTag(R.id.imageViewIsChecked);
+                if (isChecked) {
+                    v.setTag(R.id.imageViewIsChecked, false);
+
+                } else {
+                    v.setTag(R.id.imageViewIsChecked, true);
+                }
+                setImageViewImage(imageView);
+            }
+        });
     }
 
     public void setCardListeners() {
@@ -469,97 +519,102 @@ public class NumberController {
     public void generateNewNumbers() {
         Random r = new Random();
 
-        ListIterator<ToggleButton> it = toggleButtons.listIterator();
+        ListIterator<ImageView> it = imageViews.listIterator();
         while (it.hasNext()) {
-            ToggleButton toggleButton = it.next();
-            if (toggleButton.isChecked()) {
-                toggleButton.setText(String.valueOf(r.nextInt(6) + 1));
-                toggleButton.setTextOn(toggleButton.getText());
-                toggleButton.setTextOff(toggleButton.getText());
-
-                toggleButton.setChecked(false);
+            ImageView imageView = it.next();
+            boolean isChecked = (boolean) imageView.getTag(R.id.imageViewIsChecked);
+            if (isChecked) {
+                int value = r.nextInt(6) + 1;
+                imageView.setTag(R.id.imageViewNumbericValue, value);
+                setImageViewImage(imageView);
             }
-
         }
     }
 
-    public void setToggleButtonListeners(final ToggleButton tButton) {
-        tButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    //Do something
-                } else {
-                    //Nothing
-                }
-            }
-        });
-    }
-
     public void generateNumbers() {
-
-        toggleEnableToggleButton(true);
-
         Random r = new Random();
-        ToggleButton tButton = (ToggleButton) activity.findViewById(R.id.number1);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
-        setImageButtonImage((ImageView) activity.findViewById(R.id.number1Img), Integer.valueOf(tButton.getText().toString()));
+        int value = 0;
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number2);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
-        setImageButtonImage((ImageView) activity.findViewById(R.id.number2Img), Integer.valueOf(tButton.getText().toString()));
+        value = r.nextInt(6) + 1;
+        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        imageView.setTag(R.id.imageViewNumbericValue, value);
+        setImageViewImage(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number3);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
-        setImageButtonImage((ImageView) activity.findViewById(R.id.number3Img), Integer.valueOf(tButton.getText().toString()));
+        value = r.nextInt(6) + 1;
+        imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        imageView.setTag(R.id.imageViewNumbericValue, value);
+        setImageViewImage(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number4);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
-        setImageButtonImage((ImageView) activity.findViewById(R.id.number4Img), Integer.valueOf(tButton.getText().toString()));
+        value = r.nextInt(6) + 1;
+        imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        imageView.setTag(R.id.imageViewNumbericValue, value);
+        setImageViewImage(imageView);
 
-        tButton = (ToggleButton) activity.findViewById(R.id.number5);
-        tButton.setText(String.valueOf(r.nextInt(6) + 1));
-        tButton.setTextOn(tButton.getText());
-        tButton.setTextOff(tButton.getText());
-        setImageButtonImage((ImageView) activity.findViewById(R.id.number5Img), Integer.valueOf(tButton.getText().toString()));
+        value = r.nextInt(6) + 1;
+        imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        imageView.setTag(R.id.imageViewNumbericValue, value);
+        setImageViewImage(imageView);
 
+        value = r.nextInt(6) + 1;
+        imageView = (ImageView) activity.findViewById(R.id.number5Img);
+        imageView.setTag(R.id.imageViewNumbericValue, value);
+        setImageViewImage(imageView);
     }
 
-    private void setImageButtonImage(ImageView imageButton, int value) {
+    private void setImageViewImage(ImageView imageView) {
+
+        int value = (int) imageView.getTag(R.id.imageViewNumbericValue);
+        boolean isChecked = (boolean) imageView.getTag(R.id.imageViewIsChecked);
+
         if (value < 1 || value > 6) {
             return;
         }
 
         switch (value) {
             case 1:
-                imageButton.setImageResource(R.drawable.ic_looks_one_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_one_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_one_black_18dp);
+                }
                 break;
             case 2:
-                imageButton.setImageResource(R.drawable.ic_looks_two_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_two_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_two_black_18dp);
+                }
                 break;
             case 3:
-                imageButton.setImageResource(R.drawable.ic_looks_3_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_3_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_3_black_18dp);
+                }
                 break;
             case 4:
-                imageButton.setImageResource(R.drawable.ic_looks_4_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_4_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_4_black_18dp);
+                }
                 break;
             case 5:
-                imageButton.setImageResource(R.drawable.ic_looks_5_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_5_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_5_black_18dp);
+                }
                 break;
             case 6:
-                imageButton.setImageResource(R.drawable.ic_looks_6_black_18dp);
+                if (isChecked) {
+                    imageView.setImageResource(R.drawable.ic_looks_6_white_18dp);
+                } else {
+                    imageView.setImageResource(R.drawable.ic_looks_6_black_18dp);
+                }
                 break;
         }
     }
-
 
     public void restart() {
         firstThrow = true;
