@@ -2,92 +2,99 @@ package me.tim.org.yahtzee;
 
 import android.app.Activity;
 import android.content.ClipData;
+import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.support.v7.widget.CardView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
-import java.util.TreeSet;
 
 /**
  * Created by Nekkyou on 29-3-2016.
  */
 public class NumberController {
-
     private Activity activity;
     private ArrayList<ImageView> imageViews;
     private boolean firstThrow = true;
     private int throwAmount;
+    private ArrayList<TextView> basicTextViews;
+    private ArrayList<TextView> advanceTextViews;
+    private DataController dataController;
+    //For shaking
+    private SensorManager mSensorManager;
+    private Sensor mAccelerometer;
+    private ShakeDetector mShakeDetector;
 
-    private ArrayList<TextView> textViews;
-
-    public NumberController(Activity activity) {
-
-        TextView textView = (TextView) activity.findViewById(R.id.totalTextValue);
-        textView.setText("0");
-
+    public NumberController(final Activity activity) {
         this.activity = activity;
-
         imageViews = new ArrayList<>();
-        setListeners();
         throwAmount = 0;
+        basicTextViews = new ArrayList<>();
+        advanceTextViews = new ArrayList<>();
+        dataController = new DataController(activity);
 
-        textViews = new ArrayList<>();
+
+        setListeners();
         fillTextViewList();
-
         setImageViewOnClick();
-    }
 
-    private void setImageViewOnClick() {
-        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
-        setSingleImageViewClick(imageView);
-        imageView = (ImageView) activity.findViewById(R.id.number2Img);
-        setSingleImageViewClick(imageView);
-        imageView = (ImageView) activity.findViewById(R.id.number3Img);
-        setSingleImageViewClick(imageView);
-        imageView = (ImageView) activity.findViewById(R.id.number4Img);
-        setSingleImageViewClick(imageView);
-    }
 
-    private void setSingleImageViewClick(ImageView imageView) {
-        imageView.setTag("Test");
-        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+        Button saveButton = (Button) activity.findViewById(R.id.saveScoreButton);
+        saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View v) {
-                ClipData dragData = ClipData.newPlainText("Test", "second Test");
-                View.DragShadowBuilder myShadow = new View.DragShadowBuilder(v);
+            public void onClick(View v) {
+                dataController.saveScore(getTotalValue());
+            }
+        });
 
-                v.startDrag(dragData, myShadow, null, 0);
-                return false;
+        Button getSaveButton = (Button) activity.findViewById(R.id.getsaveScoreButton);
+        getSaveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                List<Integer> scores = dataController.getScores();
+                for (Integer score : scores) {
+                    System.out.println(score);
+                }
             }
         });
     }
 
-    private void fillTextViewList() {
-        textViews.add((TextView) activity.findViewById(R.id.textValueOne));
-        textViews.add((TextView) activity.findViewById(R.id.textValueTwo));
-        textViews.add((TextView) activity.findViewById(R.id.textValueThree));
-        textViews.add((TextView) activity.findViewById(R.id.textValueFour));
-        textViews.add((TextView) activity.findViewById(R.id.textValueFive));
-        textViews.add((TextView) activity.findViewById(R.id.textValueSix));
+    public void shaked() {
+        Button button = (Button) activity.findViewById(R.id.btnThrow);
+        if (firstThrow) {
+            generateNumbers();
+        } else {
+            if (generateNewNumbers()) {
+                throwAmount++;
+            }
+        }
+        if (throwAmount >= 2) {
+            button.setEnabled(false);
+        }
 
-        textViews.add((TextView) activity.findViewById(R.id.textValueThreeOfAKind));
-        textViews.add((TextView) activity.findViewById(R.id.textValueFourOfAKind));
-        textViews.add((TextView) activity.findViewById(R.id.textValueFullHouse));
-        textViews.add((TextView) activity.findViewById(R.id.textValueSmallStraight));
-        textViews.add((TextView) activity.findViewById(R.id.textValueLongStraigth));
-        textViews.add((TextView) activity.findViewById(R.id.textValueYahtzee));
-        textViews.add((TextView) activity.findViewById(R.id.textValueChance));
+        imageAnimation();
     }
 
+
+    //region score
     private void processScore(String item) {
 
         if (firstThrow) {
@@ -137,7 +144,7 @@ public class NumberController {
                 }
                 break;
             case "ThreeOfAKind":
-                if (checkAllMultipleOccurrences(numbers, 3)) {
+                if (CombinationChecker.getInstance().checkAllMultipleOccurrences(numbers, 3)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueThreeOfAKind), totalSum)) {
                         return;
                     }
@@ -148,7 +155,7 @@ public class NumberController {
                 }
                 break;
             case "FourOfAKind":
-                if (checkAllMultipleOccurrences(numbers, 4)) {
+                if (CombinationChecker.getInstance().checkAllMultipleOccurrences(numbers, 4)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFourOfAKind), totalSum)) {
                         return;
                     }
@@ -159,7 +166,7 @@ public class NumberController {
                 }
                 break;
             case "SmlStraigth":
-                if (checkStreet(numbers, 4)) {
+                if (CombinationChecker.getInstance().checkStreet(numbers, 4)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueSmallStraight), 30)) {
                         return;
                     }
@@ -170,7 +177,7 @@ public class NumberController {
                 }
                 break;
             case "LngStraigth":
-                if (checkStreet(numbers, 5)) {
+                if (CombinationChecker.getInstance().checkStreet(numbers, 5)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueLongStraigth), 40)) {
                         return;
                     }
@@ -181,7 +188,7 @@ public class NumberController {
                 }
                 break;
             case "FullHouse":
-                if (checkFullHouse(numbers)) {
+                if (CombinationChecker.getInstance().checkFullHouse(numbers)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueFullHouse), 25)) {
                         return;
                     }
@@ -192,7 +199,7 @@ public class NumberController {
                 }
                 break;
             case "Yahtzee":
-                if (checkYahtzee(numbers)) {
+                if (CombinationChecker.getInstance().checkYahtzee(numbers)) {
                     if (!setSingleScore((TextView) activity.findViewById(R.id.textValueYahtzee), 50)) {
                         return;
                     }
@@ -218,63 +225,62 @@ public class NumberController {
         checkEnd();
     }
 
-    private boolean checkFullHouse(List<Integer> numbers) {
-        TreeSet<Integer> distinctNumbers = new TreeSet<>(numbers);
-        if (distinctNumbers.size() != 2) {
+    private boolean setSingleScore(TextView textView, int value) {
+        if (!textView.getText().toString().matches("")) {
             return false;
         } else {
-            for (int i : distinctNumbers) {
-                if (Collections.frequency(numbers, i) < 2) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private boolean checkAllMultipleOccurrences(List<Integer> numbers, int amount) {
-        for (int i=1; i < 7; i++) {
-            if (Collections.frequency(numbers, i) >= amount) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean checkStreet(List<Integer> numbers, int streetLength) {
-        Collections.sort(numbers);
-        int counter = 1;
-        int lastNumber = 0;
-        for (int i : numbers) {
-            if (lastNumber == 0) {
-                lastNumber = i;
-            } else {
-                if (i - 1 == lastNumber) {
-                    counter++;
-                    if (counter >= streetLength) {
-                        return true;
-                    }
-                } else if (i != lastNumber){
-                    counter = 1;
-                }
-
-                lastNumber = i;
-            }
-        }
-        return false;
-    }
-
-    private boolean checkYahtzee(List<Integer> numbers) {
-        if (Collections.frequency(numbers, numbers.get(1)) != 5) {
-            return false;
-        } else {
+            textView.setText(String.valueOf(value));
             return true;
         }
     }
 
+    private void setTotalValue() {
+        TextView textView = (TextView) activity.findViewById(R.id.totalTextValue);
+        int value = getTotalValue();
+
+        if (getBasicScore() >= 63) {
+            textView.setText(String.valueOf(value) + " + 35\nBonus Acquired");
+        } else {
+            textView.setText(String.valueOf(value));
+        }
+    }
+
+    private int getBasicScore() {
+        int value = 0;
+        for (TextView textView : basicTextViews) {
+            value += getSingleScoreFromTextView(textView);
+        }
+
+        return value;
+    }
+
+    private int getAdvancedScore() {
+        int value = 0;
+        for (TextView textView : advanceTextViews) {
+            value += getSingleScoreFromTextView(textView);
+        }
+        return value;
+    }
+
+    private int getTotalValue() {
+        return getBasicScore() + getAdvancedScore();
+    }
+
+    private int getSingleScoreFromTextView(TextView textView) {
+        if (textView.getText().toString().matches("")) {
+            return 0;
+        } else {
+            return Integer.valueOf(textView.getText().toString());
+        }
+    }
+    //endregion
+
     private void checkEnd() {
         boolean shouldEnd = true;
+        ArrayList<TextView> textViews = new ArrayList<>();
+        textViews.addAll(basicTextViews);
+        textViews.addAll(advanceTextViews);
+
         for (TextView textView : textViews) {
             if (textView.getText().toString().matches("")) {
                 shouldEnd = false;
@@ -293,61 +299,6 @@ public class NumberController {
 
     }
 
-    private boolean setSingleScore(TextView textView, int value) {
-        if (!textView.getText().toString().matches("")) {
-            return false;
-        } else {
-            textView.setText(String.valueOf(value));
-            return true;
-        }
-    }
-
-    private void setTotalValue() {
-        TextView textView = (TextView) activity.findViewById(R.id.totalTextValue);
-        int value = getTotalValue();
-
-        if (value >= 63) {
-            textView.setText(String.valueOf(value) + " + 35\nBonus Acquired");
-        } else {
-            textView.setText(String.valueOf(value));
-        }
-    }
-
-    private int getTotalValue() {
-        int value = 0;
-
-        TextView textView = (TextView) activity.findViewById(R.id.textValueOne);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-
-        textView = (TextView) activity.findViewById(R.id.textValueTwo);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-
-        textView = (TextView) activity.findViewById(R.id.textValueThree);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-
-        textView = (TextView) activity.findViewById(R.id.textValueFour);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-
-        textView = (TextView) activity.findViewById(R.id.textValueFive);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-        textView = (TextView) activity.findViewById(R.id.textValueSix);
-        if (!textView.getText().toString().matches("")) {
-            value += Integer.valueOf(textView.getText().toString());
-        }
-
-        return value;
-    }
-
     private void resetNumbers() {
         activity.findViewById(R.id.btnThrow).setEnabled(true);
         firstThrow = true;
@@ -357,74 +308,30 @@ public class NumberController {
         while (it.hasNext()) {
             ImageView imageView = it.next();
             imageView.setImageResource(R.drawable.ic_loop_black_18dp);
-            //TODO
         }
     }
 
-    public void setListeners() {
-        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
-        imageView.setTag(R.id.imageViewIsChecked, false);
-        imageViews.add(imageView);
-        setImageViewClicked(imageView);
-
-        imageView = (ImageView) activity.findViewById(R.id.number2Img);
-        imageView.setTag(R.id.imageViewIsChecked, false);
-        imageViews.add(imageView);
-        setImageViewClicked(imageView);
-
-        imageView = (ImageView) activity.findViewById(R.id.number3Img);
-        imageView.setTag(R.id.imageViewIsChecked, false);
-        imageViews.add(imageView);
-        setImageViewClicked(imageView);
-
-        imageView = (ImageView) activity.findViewById(R.id.number4Img);
-        imageView.setTag(R.id.imageViewIsChecked, false);
-        imageViews.add(imageView);
-        setImageViewClicked(imageView);
-
-        imageView = (ImageView) activity.findViewById(R.id.number5Img);
-        imageView.setTag(R.id.imageViewIsChecked, false);
-        imageViews.add(imageView);
-        setImageViewClicked(imageView);
-
-        final Button button = (Button) activity.findViewById(R.id.btnThrow);
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (firstThrow) {
-                    generateNumbers();
-                    firstThrow = false;
-                } else {
-                    generateNewNumbers();
-                    throwAmount++;
-                }
-
-                if (throwAmount >= 2) {
-                    button.setEnabled(false);
-                }
-
-                imageAnimation();
-            }
-        });
-
-        setCardListeners();
-    }
-
+    //region Animation
     private void imageAnimation() {
         for (ImageView imageView : imageViews) {
-            if ((boolean)imageView.getTag(R.id.imageViewIsChecked) || firstThrow) {
+            if (firstThrow) {
+                singleImageAnimation(imageView);
+            }
+            else if ((boolean)imageView.getTag(R.id.imageViewIsChecked)) {
                 singleImageAnimation(imageView);
                 imageView.setTag(R.id.imageViewIsChecked, false);
             }
             System.out.println("IsChecked: " + (boolean)imageView.getTag(R.id.imageViewIsChecked));
             System.out.println("firstThrow: " + firstThrow + "\n");
         }
+        if (firstThrow) {
+            firstThrow = false;
+        }
     }
 
     private void singleImageAnimation(final ImageView imageView) {
         AnimationDrawable animation = new AnimationDrawable();
-        for (Drawable drawable : getRandomDrawables(5)) {
+        for (Drawable drawable : getRandomDrawables(10)) {
             animation.addFrame(drawable, 100);
         }
         animation.addFrame(getLastDiceDrawable(imageView), 100);
@@ -474,61 +381,42 @@ public class NumberController {
         int value = (int) imageView.getTag(R.id.imageViewNumbericValue);
         return getDrawableDiceByNumber(value);
     }
-    private void setImageViewClicked(final ImageView imageView) {
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                boolean isChecked = (boolean) v.getTag(R.id.imageViewIsChecked);
-                if (isChecked) {
-                    v.setTag(R.id.imageViewIsChecked, false);
+    //endregion
 
-                } else {
-                    v.setTag(R.id.imageViewIsChecked, true);
-                }
-                setImageViewImage(imageView);
-            }
-        });
-    }
-
-    public void setCardListeners() {
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardOne), "Ones");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardTwo), "Twos");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardThree), "Threes");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardFour), "Fours");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardFive), "Fives");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardSix), "Sixes");
-
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardThreeOfAKind), "ThreeOfAKind");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardFourOfAKind),  "FourOfAKind");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardSmallStraight), "SmlStraigth");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardLongStraigth), "LngStraigth");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardFullHouse), "FullHouse");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardYahtzee), "Yahtzee");
-        setSingleCardListener((CardView) activity.findViewById(R.id.cardChance), "Chance");
-    }
-
-    private void setSingleCardListener(CardView cardView, final String value) {
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                processScore(value);
-            }
-        });
-    }
-
-    public void generateNewNumbers() {
+    //region number Generation
+    public boolean generateNewNumbers() {
         Random r = new Random();
 
+        ArrayList<ImageView> checkedDice = getCheckedDice();
+        if (checkedDice.isEmpty()) {
+            return false;
+        }
+
+        ListIterator<ImageView> it = checkedDice.listIterator();
+
+        while (it.hasNext()) {
+            ImageView imageView = it.next();
+            int value = r.nextInt(6) + 1;
+            imageView.setTag(R.id.imageViewNumbericValue, value);
+            setImageViewImage(imageView);
+        }
+
+        return true;
+    }
+
+    public ArrayList<ImageView> getCheckedDice() {
+        ArrayList<ImageView> checkedDices = new ArrayList<>();
         ListIterator<ImageView> it = imageViews.listIterator();
+
         while (it.hasNext()) {
             ImageView imageView = it.next();
             boolean isChecked = (boolean) imageView.getTag(R.id.imageViewIsChecked);
             if (isChecked) {
-                int value = r.nextInt(6) + 1;
-                imageView.setTag(R.id.imageViewNumbericValue, value);
-                setImageViewImage(imageView);
+                checkedDices.add(imageView);
             }
         }
+
+        return checkedDices;
     }
 
     public void generateNumbers() {
@@ -560,6 +448,7 @@ public class NumberController {
         imageView.setTag(R.id.imageViewNumbericValue, value);
         setImageViewImage(imageView);
     }
+    //endregion
 
     private void setImageViewImage(ImageView imageView) {
 
@@ -627,15 +516,16 @@ public class NumberController {
             public void onClick(View v) {
                 if (firstThrow) {
                     generateNumbers();
-                    firstThrow = false;
                 } else {
-                    generateNewNumbers();
-                    throwAmount++;
+                    if (generateNewNumbers()) {
+                        throwAmount++;
+                    }
                 }
-
                 if (throwAmount >= 2) {
                     button.setEnabled(false);
                 }
+
+                imageAnimation();
             }
         });
 
@@ -675,4 +565,141 @@ public class NumberController {
         textView.setText("");
         //endregion
     }
+
+    //region Listeners
+
+    public void setListeners() {
+        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
+
+        imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
+
+        imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
+
+        imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
+
+        imageView = (ImageView) activity.findViewById(R.id.number5Img);
+        imageView.setTag(R.id.imageViewIsChecked, false);
+        imageViews.add(imageView);
+        setImageViewClicked(imageView);
+
+        final Button button = (Button) activity.findViewById(R.id.btnThrow);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                if (firstThrow) {
+                    generateNumbers();
+                } else {
+                    if (generateNewNumbers()) {
+                        throwAmount++;
+                    }
+                }
+
+                if (throwAmount >= 2) {
+                    button.setEnabled(false);
+                }
+
+                imageAnimation();
+            }
+        });
+
+        setCardListeners();
+    }
+
+    private void setImageViewOnClick() {
+        ImageView imageView = (ImageView) activity.findViewById(R.id.number1Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number2Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number3Img);
+        setSingleImageViewClick(imageView);
+        imageView = (ImageView) activity.findViewById(R.id.number4Img);
+        setSingleImageViewClick(imageView);
+    }
+
+    private void setSingleImageViewClick(ImageView imageView) {
+        imageView.setTag("Test");
+        imageView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ClipData dragData = ClipData.newPlainText("Test", "second Test");
+                View.DragShadowBuilder myShadow = new View.DragShadowBuilder(v);
+
+                v.startDrag(dragData, myShadow, null, 0);
+                return false;
+            }
+        });
+    }
+
+    public void setCardListeners() {
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardOne), "Ones");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardTwo), "Twos");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardThree), "Threes");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardFour), "Fours");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardFive), "Fives");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardSix), "Sixes");
+
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardThreeOfAKind), "ThreeOfAKind");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardFourOfAKind),  "FourOfAKind");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardSmallStraight), "SmlStraigth");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardLongStraigth), "LngStraigth");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardFullHouse), "FullHouse");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardYahtzee), "Yahtzee");
+        setSingleCardListener((CardView) activity.findViewById(R.id.cardChance), "Chance");
+    }
+
+    private void setSingleCardListener(CardView cardView, final String value) {
+        cardView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                processScore(value);
+            }
+        });
+    }
+
+    private void setImageViewClicked(final ImageView imageView) {
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean isChecked = (boolean) v.getTag(R.id.imageViewIsChecked);
+                if (isChecked) {
+                    v.setTag(R.id.imageViewIsChecked, false);
+
+                } else {
+                    v.setTag(R.id.imageViewIsChecked, true);
+                }
+                setImageViewImage(imageView);
+            }
+        });
+    }
+
+    private void fillTextViewList() {
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueOne));
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueTwo));
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueThree));
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueFour));
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueFive));
+        basicTextViews.add((TextView) activity.findViewById(R.id.textValueSix));
+
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueThreeOfAKind));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueFourOfAKind));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueFullHouse));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueSmallStraight));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueLongStraigth));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueYahtzee));
+        advanceTextViews.add((TextView) activity.findViewById(R.id.textValueChance));
+    }
+    //endregion
 }
