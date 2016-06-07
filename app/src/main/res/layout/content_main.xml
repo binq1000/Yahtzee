@@ -352,25 +352,4 @@
             style="@style/scoreText"
             android:layout_weight="2"/>
     </LinearLayout>
-
-
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-        <Button
-            android:id="@+id/saveScoreButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Save"
-            />
-        <Button
-            android:id="@+id/getsaveScoreButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Get Saves"
-            />
-    </LinearLayout>
-
-
 </LinearLayout>
