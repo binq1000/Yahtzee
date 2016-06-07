@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onShake() {
                 Toast.makeText(MainActivity.this, "Shaked", Toast.LENGTH_SHORT).show();
-                controller.shaked();
+                shaked();
             }
         });
 
@@ -554,5 +554,40 @@ public class MainActivity extends AppCompatActivity {
         return getDrawableDiceByNumber(value);
     }
     //endregion
+
+
+    public ArrayList<ImageView> getCheckedDice() {
+        ArrayList<ImageView> checkedDices = new ArrayList<>();
+        ListIterator<ImageView> it = imageViews.listIterator();
+
+        while (it.hasNext()) {
+            ImageView imageView = it.next();
+            boolean isChecked = (boolean) imageView.getTag(R.id.imageViewIsChecked);
+            if (isChecked) {
+                checkedDices.add(imageView);
+            }
+        }
+
+        return checkedDices;
+    }
+
+    public void shaked() {
+        if (!btnThrow.isEnabled() || btnThrow.getText().toString().matches("Restart")) {
+            return;
+        }
+
+        if (controller.isFirstThrow()) {
+            controller.generateNumbers();
+        } else {
+            if (controller.generateNewNumbers()) {
+                controller.raiseThrowAmount();
+            }
+        }
+        if (controller.getThrowAmount() >= 2) {
+            setBtnThrow(false);
+        }
+
+        imageAnimation();
+    }
 
 }

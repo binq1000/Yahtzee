@@ -19,6 +19,17 @@ public class NumberController {
     private MainActivity activity;
     private boolean firstThrow = true;
 
+
+
+    private int throwAmount;
+    private DataController dataController;
+
+    public NumberController(final MainActivity activity) {
+        this.activity = activity;
+        throwAmount = 0;
+        dataController = new DataController(activity);
+    }
+
     public int getThrowAmount() {
         return throwAmount;
     }
@@ -39,31 +50,6 @@ public class NumberController {
         this.firstThrow = firstThrow;
     }
 
-    private int throwAmount;
-    private DataController dataController;
-
-    public NumberController(final MainActivity activity) {
-        this.activity = activity;
-        throwAmount = 0;
-        dataController = new DataController(activity);
-    }
-
-    public void shaked() {
-        Button button = (Button) activity.findViewById(R.id.btnThrow);
-        if (firstThrow) {
-            generateNumbers();
-        } else {
-            if (generateNewNumbers()) {
-                throwAmount++;
-            }
-        }
-        if (throwAmount >= 2) {
-            button.setEnabled(false);
-        }
-
-        imageAnimation();
-    }
-
     private int getTotalSum(List<Integer> numbers) {
         int value = 0;
         for (Integer integer : numbers) {
@@ -71,7 +57,6 @@ public class NumberController {
         }
         return value;
     }
-
 
     //region score
     public void processScore(String item) {
@@ -244,7 +229,7 @@ public class NumberController {
     public boolean generateNewNumbers() {
         Random r = new Random();
 
-        ArrayList<ImageView> checkedDice = getCheckedDice();
+        ArrayList<ImageView> checkedDice = activity.getCheckedDice();
         if (checkedDice.isEmpty()) {
             return false;
         }
@@ -255,25 +240,10 @@ public class NumberController {
             ImageView imageView = it.next();
             int value = r.nextInt(6) + 1;
             imageView.setTag(R.id.imageViewNumbericValue, value);
-            setImageViewImage(imageView);
+            activity.setImageViewImage(imageView);
         }
 
         return true;
-    }
-
-    public ArrayList<ImageView> getCheckedDice() {
-        ArrayList<ImageView> checkedDices = new ArrayList<>();
-        ListIterator<ImageView> it = imageViews.listIterator();
-
-        while (it.hasNext()) {
-            ImageView imageView = it.next();
-            boolean isChecked = (boolean) imageView.getTag(R.id.imageViewIsChecked);
-            if (isChecked) {
-                checkedDices.add(imageView);
-            }
-        }
-
-        return checkedDices;
     }
 
     public void generateNumbers() {
@@ -329,7 +299,7 @@ public class NumberController {
                     button.setEnabled(false);
                 }
 
-                imageAnimation();
+                activity.imageAnimation();
             }
         });
 
